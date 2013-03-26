@@ -1,4 +1,6 @@
 MediaFire.com-library
 =====================
 
-This is MediaFire.com API wrapper written in Python.
+This is a MediaFire.com API wrapper written on Python.
+
+Python version: 2.7
