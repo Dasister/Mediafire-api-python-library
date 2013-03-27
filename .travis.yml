@@ -1,8 +1,4 @@
 language: python
 python:
   - "2.7"
-<<<<<<< HEAD
 script: nosetests
-=======
-script: nosetests
->>>>>>> Updated File's API
