@@ -2,6 +2,8 @@
 # ToDo:
 #   - Comment all functions
 #   - Write all functions of class MediaFireLib
+#   - Add error handling
+#   - Add support of xml response format
 
 # MediaFire.com REST API link: http://developers.mediafire.com/index.php/REST_API
 
@@ -21,7 +23,7 @@ class MediaFireLib(object):
     userAgent = "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)"
     responseFormat = "json"
 
-    apiVersion = "1.1"
+    apiVersion = "2.9"
 
     USER_ACCEPT_TOS = "http://www.mediafire.com/api/user/accept_tos.php"
     USER_FETCH_TOS = "http://www.mediafire.com/api/user/fetch_tos.php"
@@ -85,7 +87,7 @@ class MediaFireLib(object):
         self.userMail, self.userPassword, self.appID, self.apiKey = _userMail, _userPassword, _appID, _apiKey
         self.signature = hashlib.sha1(self.userMail + self.userPassword + str(self.appID) + self.apiKey).hexdigest()
 
-
+# Stuff.
     def setSecure(self, _secure):
         self.secure = _secure
 
@@ -120,7 +122,12 @@ class MediaFireLib(object):
         return js['login_token']
 
     def user_getInfo(self):
-        pass
+        data = urllib.urlencode({'session_token': self.sessionToken, 'response_format': 'json'})
+        res = urllib2.urlopen(self.USER_GET_INFO, data)
+        js = json.load(res)['response']
+        if (js['result'] == "Error"):
+            return js['message']
+        return js
 
     def user_update(self):
         pass
@@ -136,31 +143,74 @@ class MediaFireLib(object):
 
 # File API
     def file_getInfo(self, quick_key):
-        pass
+        data = urllib.urlencode({'quick_key': quick_key, 'session_token': self.sessionToken, 'response_format': self.responseFormat})
+        res = urllib2.urlopen(self.FILE_GET_INFO, data)
+        js = json.load(res)['response']
+        if (js['result'] == "Error"):
+            return js['message']
+        return js
 
     def file_delete(self, quick_key):
-        pass
+        data = urllib.urlencode({'quick_key': quick_key, 'session_token': self.sessionToken, 'response_format': self.responseFormat})
+        res = urllib2.urlopen(self.FILE_DELETE, data)
+        js = json.load(res)['response']
+        if (js['result'] == "Error"):
+            return js['message']
+        return js
 
     def file_move(self, quick_key, folder_key = "myfiles"):
-        pass
+        data = urllib.urlencode({'quick_key': quick_key, 'session_token': self.sessionToken, 'folder_key': folder_key, 'response_format': self.responseFormat})
+        res = urllib2.urlopen(self.FILE_MOVE, data)
+        js = json.load(res)['response']
+        if (js['result'] == "Error"):
+            return js['message']
+        return js
 
     def file_update(self, quick_key, filename = "", description = "", tags = "", privacy = "private", note_subject = "", note_description = "", timezone = ""):
         pass
 
     def file_updatePassword(self, quick_key, password):
-        pass
+        data = urllib.urlencode({'quick_key': quick_key, 'password': password, 'session_token': self.sessionToken, 'response_format': self.responseFormat})
+        res = urllib2.urlopen(self.FILE_UPDATE_PASSWORD, data)
+        js = json.load(res)['response']
+        if (js['result'] == "Error"):
+            return js['message']
+        return js
 
     def file_updateFile(self, from_quickkey, to_quickkey):
-        pass
+        data = urllib.urlencode({'from_quickey': from_quickkey, 'to_quickkey': to_quickkey, 'session_token': self.sessionToken, 'response_format': self.responseFormat})
+        res = urllib2.urlopen(self.FILE_UPDATE_FILE, data)
+        js = json.load(res)['response']
+        if (js['result'] == "Error"):
+            return js['message']
+        return js
 
     def file_copy(self, quick_key, folder_key = "myfiles"):
-        pass
+        data = urllib.urlencode({'quick_key': quick_key, 'folder_key': folder_key, 'session_token': self.sessionToken, 'response_format': self.responseFormat})
+        res = urllib2.urlopen(self.FILE_COPY, data)
+        js = json.load(res)['response']
+        if (js['result'] == "Error"):
+            return js['message']
+        return js
 
-    def file_getLinks(self, quick_key, link_type):
-        pass
+#   link_type can be: 'view', 'edit', 'normal_download', 'direct_download', 'one_time_download'
 
-    def file_collaborate(self, quick_key, emails, duration, message, public, email_notification):
-        pass
+    def file_getLinks(self, quick_key, link_type = "direct_download"):
+        data = urllib.urlencode({'quick_key': quick_key, 'link_type': link_type, 'session_token': self.sessionToken, 'response_format': self.responseFormat})
+        res = urllib2.urlopen(self.FILE_GET_LINKS, data)
+        js = json.load(res)['response']
+        if (js['result'] == "Error"):
+            return js['message']
+        return js
+
+    def file_collaborate(self, quick_key, emails = "", duration = 60, message = "", public = "no", email_notification = "no"):
+        data = urllib.urlencode({'quick_key': quick_key, 'emails': emails, 'duration': str(duration), 'message': message, 'public': public,
+                                 'email_notification': email_notification, 'session_token': self.sessionToken, 'response_format': self.responseFormat})
+        res = urllib2.urlopen(self.FILE_COLLABORATE, data)
+        js = json.load(res)['response']
+        if (js['result'] == "Error"):
+            return js['message']
+        return js
 
     def file_oneTimeDownload(self, quick_key, duration, email_notification, success_callback_url = "", error_callback_url = "", bind_ip = "", burn_after_use = "yes", get_counts_only = "no"):
         pass
@@ -228,7 +278,7 @@ class MediaFireLib(object):
         fp = open(filePath, 'rb')
         fSize = os.path.getsize(filePath)
         mheaders = {'x-filename': os.path.basename(filePath), 'x-filesize': int(fSize), 'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.22 (KHTML, like Gecko) Chrome/25.0.1364.172 Safari/537.22'}
-        data = {'session_token': self.sessionToken, 'uploadkey': folderKey, 'response_format': 'json'}
+        data = {'session_token': self.sessionToken, 'uploadkey': folderKey, 'response_format': self.responseFormat}
 
         form = MultiPartForm()
         form.add_file('fileUpload', os.path.basename(filePath), fp)
@@ -346,3 +396,4 @@ class MultiPartForm(object):
         flattened.append('--' + self.boundary + '--')
         flattened.append('')
         return '\r\n'.join(flattened)
+
