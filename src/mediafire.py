@@ -114,7 +114,7 @@ class MediaFireLib(object):
     def user_getLoginToken(self):
         data = urllib.urlencode({'email': self.userMail, 'password': self.userPassword,
                                  'application_id': self.appID, 'signature': self.signature,
-                                 'response_fromat': 'json'})
+                                 'response_fromat': self.responseFormat})
         res = urllib2.urlopen(self.USER_GET_LOGIN_TOKEN, data)
         js = json.load(res)['response']
         if (js['result'] == "Error"):
@@ -122,7 +122,7 @@ class MediaFireLib(object):
         return js['login_token']
 
     def user_getInfo(self):
-        data = urllib.urlencode({'session_token': self.sessionToken, 'response_format': 'json'})
+        data = urllib.urlencode({'session_token': self.sessionToken, 'response_format': self.responseFormat})
         res = urllib2.urlopen(self.USER_GET_INFO, data)
         js = json.load(res)['response']
         if (js['result'] == "Error"):
@@ -297,7 +297,7 @@ class MediaFireLib(object):
 
 
     def Upload_PollUpload(self, key):
-        data = urllib.urlencode({'session_token': self.sessionToken, 'key': key, 'response_format': 'json'})
+        data = urllib.urlencode({'session_token': self.sessionToken, 'key': key, 'response_format': self.responseFormat})
         res = urllib2.urlopen(self.FILE_UPLOAD_POLL, data)
         js = json.load(res)['response']
         if (js['result'] == "Error"):
