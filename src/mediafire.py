@@ -129,17 +129,56 @@ class MediaFireLib(object):
             return js['message']
         return js
 
-    def user_update(self):
-        pass
+    def user_update(self, display_name = None, first_name = None, last_name = None, birth_date = None, gender = None, website = None, location = None, newsletter = None, primary_usage = None):
+        data = {'session_token': self.sessionToken, 'response_format': self.responseFormat, }
+        if (display_name != None):
+            data['display_name'] = display_name
+        if (first_name != None):
+            data['first_name'] = first_name
+        if (last_name != None):
+            data['last_name'] = last_name
+        if (birth_date != None):
+            data['birth_date'] = birth_date
+        if (gender != None):
+            data['gender'] = gender
+        if (website != None):
+            data['website'] = website
+        if (location != None):
+            data['location'] = location
+        if (newsletter != None):
+            data['newsletter'] = newsletter
+        if (primary_usage != None):
+            data['primary_usage'] = primary_usage
+        data = urllib.urlencode(data)
+        res = urllib2.urlopen(self.USER_UPDATE, data)
+        js = json.load(res)['response']
+        if (js['result'] == "Error"):
+            return js['message']
+        return js
 
     def user_myfilesRevision(self):
-        pass
+        data = urllib.urlencode({'session_token': self.sessionToken, 'response_format': self.responseFormat})
+        res = urllib2.urlopen(self.USER_MYFILES_REVISION, data)
+        js = json.load(res)['response']
+        if (js['result'] == "Error"):
+            return js['message']
+        return js
 
     def user_fetchTos(self):
-        pass
+        data = urllib.urlencode({'session_token': self.sessionToken, 'response_format': self.responseFormat})
+        res = urllib2.urlopen(self.USER_FETCH_TOS, data)
+        js = json.load(res)['response']
+        if (js['result'] == "Error"):
+            return js['message']
+        return js
 
-    def user_acceptTos(self):
-        pass
+    def user_acceptTos(self, acceptance_token):
+        data = urllib.urlencode({'session_token': self.sessionToken, 'response_format': self.responseFormat, 'acceptance_token': acceptance_token})
+        res = urllib2.urlopen(self.USER_ACCEPT_TOS, data)
+        js = json.load(res)['response']
+        if (js['result'] == "Error"):
+            return js['message']
+        return js
 
 # File API
     def file_getInfo(self, quick_key):
@@ -291,8 +330,25 @@ class MediaFireLib(object):
             return js['message']
         return js
 
-    def folder_update(self, folder_key, foldername, description, tags, privacy, privacy_recursive, note_subject, note_description):
-        pass
+    def folder_update(self, folder_key, foldername = None, description = None, tags = None, privacy = "private", privacy_recursive = "no", note_subject = None, note_description = None):
+        data = {'session_token': self.sessionToken, 'response_format': self.responseFormat, 'folder_key': folder_key,
+                'privacy': privacy, 'privacy_recursive': privacy_recursive}
+        if (foldername != None):
+            data['foldername'] = foldername
+        if (description != None):
+            data['description'] = description
+        if (tags != None):
+            data['tags'] = tags
+        if (note_subject != None):
+            data['note_subject'] = note_subject
+        if (note_description != None):
+            data['note_description'] = note_description
+        data = urllib.urlencode(data)
+        res = urllib2.urlopen(self.FOLDER_UPDATE, data)
+        js = json.load(res)['response']
+        if (js['result'] == "Error"):
+            return js['message']
+        return js
 
     def folder_attachForeign(self, folder_key):
         pass
