@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 MediaFire API Library
 =====================
 
