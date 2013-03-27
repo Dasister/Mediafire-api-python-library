@@ -166,8 +166,26 @@ class MediaFireLib(object):
             return js['message']
         return js
 
-    def file_update(self, quick_key, filename = "", description = "", tags = "", privacy = "private", note_subject = "", note_description = "", timezone = ""):
-        pass
+    def file_update(self, quick_key, filename = None, description = None, tags = None, privacy = "private", note_subject = None, note_description = None, timezone = None):
+        data = {'quick_key': quick_key, 'session_token': self.sessionToken, 'response_format': self.responseFormat, 'privacy': privacy}
+        if (filename != None):
+            data['filename'] = filename
+        if (description != None):
+            data['description'] = description
+        if (tags != None):
+            data['tags'] = tags
+        if (note_subject != None):
+            data['note_subject'] = note_subject
+        if (note_description != None):
+            data['note_description'] = note_description
+        if (timezone != None):
+            data['timezone'] = timezone
+        data = urllib.urlencode(data)
+        res = urllib2.urlopen(self.FILE_UPDATE, data)
+        js = json.load(res)['response']
+        if (js['result'] == "Error"):
+            return js['message']
+        return js
 
     def file_updatePassword(self, quick_key, password):
         data = urllib.urlencode({'quick_key': quick_key, 'password': password, 'session_token': self.sessionToken, 'response_format': self.responseFormat})
@@ -203,7 +221,7 @@ class MediaFireLib(object):
             return js['message']
         return js
 
-    def file_collaborate(self, quick_key, emails = "", duration = 60, message = "", public = "no", email_notification = "no"):
+    def file_collaborate(self, quick_key, emails = "", duration = 60 * 24 * 30, message = "", public = "no", email_notification = "no"):
         data = urllib.urlencode({'quick_key': quick_key, 'emails': emails, 'duration': str(duration), 'message': message, 'public': public,
                                  'email_notification': email_notification, 'session_token': self.sessionToken, 'response_format': self.responseFormat})
         res = urllib2.urlopen(self.FILE_COLLABORATE, data)
@@ -212,11 +230,34 @@ class MediaFireLib(object):
             return js['message']
         return js
 
-    def file_oneTimeDownload(self, quick_key, duration, email_notification, success_callback_url = "", error_callback_url = "", bind_ip = "", burn_after_use = "yes", get_counts_only = "no"):
-        pass
+    def file_oneTimeDownload(self, quick_key = None, duration = None, email_notification = "no", success_callback_url = "", error_callback_url = "", bind_ip = "", burn_after_use = "yes", get_counts_only = "no"):
+        data = {'session_token': self.sessionToken, 'response_fromat': self.responseFormat, 'email_notification': email_notification,
+                'success_callback_url': success_callback_url, 'error_callback_url': error_callback_url, 'bind_ip': bind_ip,
+                'burn_after_use': burn_after_use, 'get_counts_only': get_counts_only}
+        if (quick_key != None):
+            data['quick_key'] = quick_key
+        if (duration != None):
+            data['duration'] = str(duration)
+        data = urllib.urlencode(data)
+        res = urllib2.urlopen(self.FILE_ONE_TIME_DOWNLOAD, data)
+        js = json.load(res)['response']
+        if (js['result'] == "Error"):
+            return js['message']
+        return js['token']
 
-    def file_configure_oneTimeDownload(self, token, duration, email_notification, success_callback_url = "", error_callback_url = "", bind_ip = "", burn_after_use = "yes"):
-        pass
+
+    def file_configure_oneTimeDownload(self, token, duration = None, email_notification = "no", success_callback_url = "", error_callback_url = "", bind_ip = "", burn_after_use = "yes"):
+        data = {'session_token': self.sessionToken, 'response_format': self.responseFormat, 'token': token,
+                'email_notification': email_notification, 'success_callback_url': success_callback_url, 'error_callback_url': error_callback_url,
+                'bind_ip': bind_ip, 'burn_after_use': burn_after_use}
+        if (duration != None):
+            data['duration'] = str(duration)
+        data = urllib.urlencode(data)
+        res = urllib2.urlopen(self.FILE_CONFIGURE_ONE_TIME_DOWNLOAD, data)
+        js = json.load(res)['response']
+        if (js['result'] == "Error"):
+            return js['message']
+        return js
 # Folder API
     def folder_GetInfo(self, folderKey):
         data = urllib.urlencode({'folder_key': folderKey, 'session_token': self.sessionToken, 'response_format': self.responseFormat})
