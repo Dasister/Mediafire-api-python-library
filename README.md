@@ -1,6 +1,9 @@
 MediaFire API Library
 =====================
 
+### Description
+
 This is a MediaFire.com API wrapper written in Python.
 
-Python version: 2.7
+### Supported python versions:
+* 2.7
