@@ -12,6 +12,7 @@ __author__ = "Dasister"
 import urllib, urllib2
 import json, hashlib, os
 import mimetypes, mimetools, itertools
+import time
 
 class MediaFireLib(object):
     userMail, userPassword, appID, apiKey = "", "", -1, ""
@@ -19,6 +20,8 @@ class MediaFireLib(object):
     signature = ""
     secure = 0
     timeout = 30
+
+    expiresIn = -1
 
     userAgent = "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)"
     responseFormat = "json"
@@ -91,6 +94,10 @@ class MediaFireLib(object):
     def setSecure(self, _secure):
         self.secure = _secure
 
+    def checkSessionToken(self):
+        if (self.expiresIn <= time.time()):
+            self.user_renewSessionToken()
+
 # User's API
     def user_getSessionToken(self):
         data = urllib.urlencode({'email':self.userMail,'password':self.userPassword,'application_id':self.appID, 'signature':self.signature,'response_format':self.responseFormat})
@@ -100,6 +107,7 @@ class MediaFireLib(object):
         if (js['result'] == "Error"):
             return js['message']
         self.sessionToken = js['session_token']
+        self.expiresIn = time.time() + 60 * 10
         return self.sessionToken
 
     def user_renewSessionToken(self):
@@ -109,6 +117,7 @@ class MediaFireLib(object):
         if (js['result'] == "Error"):
             return js['message']
         self.sessionToken = js['session_token']
+        self.expiresIn = time.time() + 60 * 10
         return self.sessionToken
 
     def user_getLoginToken(self):
@@ -122,6 +131,7 @@ class MediaFireLib(object):
         return js['login_token']
 
     def user_getInfo(self):
+        self.checkSessionToken()
         data = urllib.urlencode({'session_token': self.sessionToken, 'response_format': self.responseFormat})
         res = urllib2.urlopen(self.USER_GET_INFO, data)
         js = json.load(res)['response']
@@ -130,6 +140,7 @@ class MediaFireLib(object):
         return js
 
     def user_update(self, display_name = None, first_name = None, last_name = None, birth_date = None, gender = None, website = None, location = None, newsletter = None, primary_usage = None):
+        self.checkSessionToken()
         data = {'session_token': self.sessionToken, 'response_format': self.responseFormat, }
         if (display_name != None):
             data['display_name'] = display_name
@@ -157,6 +168,7 @@ class MediaFireLib(object):
         return js
 
     def user_myfilesRevision(self):
+        self.checkSessionToken()
         data = urllib.urlencode({'session_token': self.sessionToken, 'response_format': self.responseFormat})
         res = urllib2.urlopen(self.USER_MYFILES_REVISION, data)
         js = json.load(res)['response']
@@ -165,6 +177,7 @@ class MediaFireLib(object):
         return js
 
     def user_fetchTos(self):
+        self.checkSessionToken()
         data = urllib.urlencode({'session_token': self.sessionToken, 'response_format': self.responseFormat})
         res = urllib2.urlopen(self.USER_FETCH_TOS, data)
         js = json.load(res)['response']
@@ -173,6 +186,7 @@ class MediaFireLib(object):
         return js
 
     def user_acceptTos(self, acceptance_token):
+        self.checkSessionToken()
         data = urllib.urlencode({'session_token': self.sessionToken, 'response_format': self.responseFormat, 'acceptance_token': acceptance_token})
         res = urllib2.urlopen(self.USER_ACCEPT_TOS, data)
         js = json.load(res)['response']
@@ -182,6 +196,7 @@ class MediaFireLib(object):
 
 # File API
     def file_getInfo(self, quick_key):
+        self.checkSessionToken()
         data = urllib.urlencode({'quick_key': quick_key, 'session_token': self.sessionToken, 'response_format': self.responseFormat})
         res = urllib2.urlopen(self.FILE_GET_INFO, data)
         js = json.load(res)['response']
@@ -198,6 +213,7 @@ class MediaFireLib(object):
         return js
 
     def file_move(self, quick_key, folder_key = "myfiles"):
+        self.checkSessionToken()
         data = urllib.urlencode({'quick_key': quick_key, 'session_token': self.sessionToken, 'folder_key': folder_key, 'response_format': self.responseFormat})
         res = urllib2.urlopen(self.FILE_MOVE, data)
         js = json.load(res)['response']
@@ -206,6 +222,7 @@ class MediaFireLib(object):
         return js
 
     def file_update(self, quick_key, filename = None, description = None, tags = None, privacy = "private", note_subject = None, note_description = None, timezone = None):
+        self.checkSessionToken()
         data = {'quick_key': quick_key, 'session_token': self.sessionToken, 'response_format': self.responseFormat, 'privacy': privacy}
         if (filename != None):
             data['filename'] = filename
@@ -227,6 +244,7 @@ class MediaFireLib(object):
         return js
 
     def file_updatePassword(self, quick_key, password):
+        self.checkSessionToken()
         data = urllib.urlencode({'quick_key': quick_key, 'password': password, 'session_token': self.sessionToken, 'response_format': self.responseFormat})
         res = urllib2.urlopen(self.FILE_UPDATE_PASSWORD, data)
         js = json.load(res)['response']
@@ -235,6 +253,7 @@ class MediaFireLib(object):
         return js
 
     def file_updateFile(self, from_quickkey, to_quickkey):
+        self.checkSessionToken()
         data = urllib.urlencode({'from_quickey': from_quickkey, 'to_quickkey': to_quickkey, 'session_token': self.sessionToken, 'response_format': self.responseFormat})
         res = urllib2.urlopen(self.FILE_UPDATE_FILE, data)
         js = json.load(res)['response']
@@ -243,6 +262,7 @@ class MediaFireLib(object):
         return js
 
     def file_copy(self, quick_key, folder_key = "myfiles"):
+        self.checkSessionToken()
         data = urllib.urlencode({'quick_key': quick_key, 'folder_key': folder_key, 'session_token': self.sessionToken, 'response_format': self.responseFormat})
         res = urllib2.urlopen(self.FILE_COPY, data)
         js = json.load(res)['response']
@@ -253,6 +273,7 @@ class MediaFireLib(object):
 #   link_type can be: 'view', 'edit', 'normal_download', 'direct_download', 'one_time_download'
 
     def file_getLinks(self, quick_key, link_type = "direct_download"):
+        self.checkSessionToken()
         data = urllib.urlencode({'quick_key': quick_key, 'link_type': link_type, 'session_token': self.sessionToken, 'response_format': self.responseFormat})
         res = urllib2.urlopen(self.FILE_GET_LINKS, data)
         js = json.load(res)['response']
@@ -261,6 +282,7 @@ class MediaFireLib(object):
         return js
 
     def file_collaborate(self, quick_key, emails = "", duration = 60 * 24 * 30, message = "", public = "no", email_notification = "no"):
+        self.checkSessionToken()
         data = urllib.urlencode({'quick_key': quick_key, 'emails': emails, 'duration': str(duration), 'message': message, 'public': public,
                                  'email_notification': email_notification, 'session_token': self.sessionToken, 'response_format': self.responseFormat})
         res = urllib2.urlopen(self.FILE_COLLABORATE, data)
@@ -270,6 +292,7 @@ class MediaFireLib(object):
         return js
 
     def file_oneTimeDownload(self, quick_key = None, duration = None, email_notification = "no", success_callback_url = "", error_callback_url = "", bind_ip = "", burn_after_use = "yes", get_counts_only = "no"):
+        self.checkSessionToken()
         data = {'session_token': self.sessionToken, 'response_fromat': self.responseFormat, 'email_notification': email_notification,
                 'success_callback_url': success_callback_url, 'error_callback_url': error_callback_url, 'bind_ip': bind_ip,
                 'burn_after_use': burn_after_use, 'get_counts_only': get_counts_only}
@@ -286,6 +309,7 @@ class MediaFireLib(object):
 
 
     def file_configure_oneTimeDownload(self, token, duration = None, email_notification = "no", success_callback_url = "", error_callback_url = "", bind_ip = "", burn_after_use = "yes"):
+        self.checkSessionToken()
         data = {'session_token': self.sessionToken, 'response_format': self.responseFormat, 'token': token,
                 'email_notification': email_notification, 'success_callback_url': success_callback_url, 'error_callback_url': error_callback_url,
                 'bind_ip': bind_ip, 'burn_after_use': burn_after_use}
@@ -299,6 +323,7 @@ class MediaFireLib(object):
         return js
 # Folder API
     def folder_GetInfo(self, folderKey):
+        self.checkSessionToken()
         data = urllib.urlencode({'folder_key': folderKey, 'session_token': self.sessionToken, 'response_format': self.responseFormat})
         res = urllib2.urlopen(self.FOLDER_GET_INFO, data)
         js = json.load(res)['response']
@@ -307,6 +332,7 @@ class MediaFireLib(object):
         return js
 
     def folder_delete(self, folderKey):
+        self.checkSessionToken()
         data = urllib.urlencode({'session_token': self.sessionToken, 'folder_key': folderKey, 'response_format': self.responseFormat})
         res = urllib2.urlopen(self.FOLDER_DELETE, data)
         js = json.load(res)['response']
@@ -315,6 +341,7 @@ class MediaFireLib(object):
         return js
 
     def folder_move(self, folderKey_src, folderKey_dst = ""):
+        self.checkSessionToken()
         data = urllib.urlencode({'session_token': self.sessionToken, 'folder_key_src': folderKey_src, 'folder_key_dst': folderKey_dst, 'response_format': self.responseFormat})
         res = urllib2.urlopen(self.FOLDER_MOVE, data)
         js = json.load(res)['response']
@@ -331,6 +358,7 @@ class MediaFireLib(object):
         return js
 
     def folder_update(self, folder_key, foldername = None, description = None, tags = None, privacy = "private", privacy_recursive = "no", note_subject = None, note_description = None):
+        self.checkSessionToken()
         data = {'session_token': self.sessionToken, 'response_format': self.responseFormat, 'folder_key': folder_key,
                 'privacy': privacy, 'privacy_recursive': privacy_recursive}
         if (foldername != None):
@@ -372,6 +400,7 @@ class MediaFireLib(object):
         pass
 # Upload API
     def upload_UploadFile(self, filePath, folderKey = "myfiles", x_filename = ""):
+        self.checkSessionToken()
         fp = open(filePath, 'rb')
         fSize = os.path.getsize(filePath)
         mheaders = {'x-filename': os.path.basename(filePath), 'x-filesize': int(fSize), 'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.22 (KHTML, like Gecko) Chrome/25.0.1364.172 Safari/537.22'}
@@ -394,6 +423,7 @@ class MediaFireLib(object):
 
 
     def Upload_PollUpload(self, key):
+        self.checkSessionToken()
         data = urllib.urlencode({'session_token': self.sessionToken, 'key': key, 'response_format': self.responseFormat})
         res = urllib2.urlopen(self.FILE_UPLOAD_POLL, data)
         js = json.load(res)['response']
@@ -402,7 +432,7 @@ class MediaFireLib(object):
         return js['doupload']['status']
 
 # Download API
-    def download_grtLinks(self, quick_key, link_type):
+    def download_getLinks(self, quick_key, link_type):
         pass
 
 # System API
@@ -422,11 +452,11 @@ class MediaFireLib(object):
         pass
 
 # eCommerce API
-    def ecommerce_oneTimeDownload(self, quick_key, duration, email_notification, success_callback_url = "", error_callback_url = "", bind_ip = "", burn_after_use = "yes", get_counts_only = "no"):
-            pass
+    def ecommerce_oneTimeDownload(self, quick_key = None, duration = None, email_notification = "no", success_callback_url = "", error_callback_url = "", bind_ip = "", burn_after_use = "yes", get_counts_only = "no"):
+        return self.file_oneTimeDownload(quick_key, duration, email_notification, success_callback_url, error_callback_url, bind_ip, burn_after_use, get_counts_only)
 
-    def ecommerce_configure_oneTimeDownload(self, token, duration, email_notification, success_callback_url = "", error_callback_url = "", bind_ip = "", burn_after_use = "yes"):
-        pass
+    def ecommerce_configure_oneTimeDownload(self, token, duration = None, email_notification = "no", success_callback_url = "", error_callback_url = "", bind_ip = "", burn_after_use = "yes"):
+        return self.file_configure_oneTimeDownload(token, duration, email_notification, success_callback_url, error_callback_url, bind_ip, burn_after_use)
 
 # MediaFireLib Class end
 
