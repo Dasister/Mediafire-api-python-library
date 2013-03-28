@@ -382,22 +382,65 @@ class MediaFireLib(object):
         return js
 
     def folder_attachForeign(self, folder_key):
-        pass
+        self.checkSessionToken()
+        data = urllib.urlencode({'session_token': self.sessionToken, 'reponse_format': self.responseFormat, 'folder_key': folder_key})
+        res = urllib2.urlopen(self.FOLDER_ATTACH_FOREIGN, data)
+        js = json.load(res)['response']
+        if (js['result'] == "Error"):
+            return js['message']
+        return js
+
 
     def folder_detachForeign(self, folder_key):
-        pass
+        self.checkSessionToken()
+        data = urllib.urlencode({'session_token': self.sessionToken, 'response_format': self.responseFormat, 'folder_key': folder_key})
+        res = urllib2.urlopen(self.FOLDER_DETACH_FOREIGN, data)
+        js = json.load(res)['response']
+        if (js['result'] == "Error"):
+            return js['message']
+        return js
 
     def folder_getRevision(self, folder_key):
-        pass
+        self.checkSessionToken()
+        data = urllib.urlencode({'response_format': self.responseFormat, 'folder_key': folder_key})
+        res = urllib2.urlopen(self.FOLDER_GET_REVISION, data)
+        js = json.load(res)['response']
+        if (js['result'] == "Error"):
+            return js['message']
+        return js
 
     def folder_getDepth(self, folder_key):
-        pass
+        self.checkSessionToken()
+        data = urllib.urlencode({'session_token': self.sessionToken, 'response_format': self.responseFormat, 'folder_key': folder_key})
+        res = urllib2.urlopen(self.FOLDER_GET_DEPTH, data)
+        js = json.load(res)['response']
+        if (js['result'] == "Error"):
+            return js['message']
+        return js
 
-    def folder_getSiblings(self, folderKey, content_filter, start, limit):
-        pass
+    def folder_getSiblings(self, folder_key, content_filter = "all", start = None, limit = None):
+        self.checkSessionToken()
+        data = {'session_token': self.sessionToken, 'response_format': self.responseFormat, 'folder_key': folder_key, 'content_filter': content_filter}
+        if (start != None):
+            data['start'] = start
+        if (limit != None):
+            data['limit'] = limit
+        data = urllib.urlencode(data)
+        res = urllib2.urlopen(self.FOLDER_GET_SIBLINGS, data)
+        js = json.load(res)['response']
+        if (js['result'] == "Error"):
+            return js['message']
+        return js
 
     def folder_search(self, search_text, folder_key = "myfiles"):
-        pass
+        self.checkSessionToken()
+        data = urllib.urlencode({'session_token': self.sessionToken, 'response_format': self.responseFormat,
+                'search_text': search_text, 'folder_key': folder_key})
+        res = urllib2.urlopen(self.FOLDER_SEARCH, data)
+        js = json.load(res)['response']
+        if (js['result'] == "Error"):
+            return js['message']
+        return js
 
     def folder_getContent(self, folder_key = None, content_type = "files", order_by = "creation", order_direction = "asc", chunk = 1):
         self.checkSessionToken()
@@ -456,19 +499,44 @@ class MediaFireLib(object):
 
 # System API
     def system_getVersion(self):
-        pass
+        data = urllib.urlencode({'response_format': self.responseFormat})
+        res = urllib2.urlopen(self.SYSTEM_GET_VERSION, data)
+        js = json.load(res)['response']
+        if (js['result'] == "Error"):
+            return js['message']
+        return js
 
     def system_getInfo(self):
-        pass
+        data = urllib.urlencode({'response_format': self.responseFormat})
+        res = urllib2.urlopen(self.SYSTEM_GET_INFO, data)
+        js = json.load(res)['response']
+        if (js['result'] == "Error"):
+            return js['message']
+        return js
 
     def system_getSupportedMedia(self, group_by_filetype = "no"):
-        pass
+        data = urllib.urlencode({'response_format': self.responseFormat, 'group_by_filetype': group_by_filetype})
+        res = urllib2.urlopen(self.SYSTEM_GET_SUPPORTED_MEDIA, data)
+        js = json.load(res)['response']
+        if (js['result'] == "Error"):
+            return js['message']
+        return js
 
     def system_getEditableMedia(self, group_by_filetype = "no"):
-        pass
+        data = urllib.urlencode({'response_format': self.responseFormat, 'group_by_filetype': group_by_filetype})
+        res = urllib2.urlopen(self.SYSTEM_GET_EDITABLE_MEDIA, data)
+        js = json.load(res)['response']
+        if (js['result'] == "Error"):
+            return js['message']
+        return js
 
     def system_getMimeTypes(self):
-        pass
+        data = urllib.urlencode({'response_format': self.responseFormat})
+        res = urllib2.urlopen(self.SYSTEM_GET_MIME_TYPES, data)
+        js = json.load(res)['response']
+        if (js['result'] == "Error"):
+            return js['message']
+        return js
 
 # eCommerce API
     def ecommerce_oneTimeDownload(self, quick_key = None, duration = None, email_notification = "no", success_callback_url = "", error_callback_url = "", bind_ip = "", burn_after_use = "yes", get_counts_only = "no"):
