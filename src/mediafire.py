@@ -4,6 +4,7 @@
 #   - Write all functions of class MediaFireLib
 #   - Add error handling
 #   - Add support of xml response format
+#   - Add checks of function's parameters
 
 # MediaFire.com REST API link: http://developers.mediafire.com/index.php/REST_API
 
@@ -66,6 +67,7 @@ class MediaFireLib(object):
     FOLDER_SEARCH = "http://www.mediafire.com/api/folder/search.php"
     FOLDER_MOVE = "http://www.mediafire.com/api/folder/move.php"
     FOLDER_UPDATE = "http://www.mediafire.com/api/folder/update.php"
+    DOWNLOAD_GET_LINKS = "http://www.mediafire.com/api/file/get_links.php"
     SYSTEM_GET_EDITABLE_MEDIA = "http://www.mediafire.com/api/system/get_editable_media.php"
     SYSTEM_GET_INFO = "http://www.mediafire.com/api/system/get_info.php"
     SYSTEM_GET_MIME_TYPES = "http://www.mediafire.com/api/system/get_mime_types.php"
@@ -396,8 +398,18 @@ class MediaFireLib(object):
     def folder_search(self, search_text, folder_key = "myfiles"):
         pass
 
-    def folder_getContent(self, folder_key, content_type, order_by, order_direction, chunk):
-        pass
+    def folder_getContent(self, folder_key = None, content_type = "files", order_by = "creation", order_direction = "asc", chunk = 1):
+        self.checkSessionToken()
+        data = {'session_token': self.sessionToken, 'response_format': self.responseFormat, 'content_type': content_type,
+                'oredr_by': order_by, 'order_direction': order_direction, 'chunk': chunk}
+        if (folder_key != None):
+            data['folder_key'] = folder_key
+        data = urllib.urlencode(data)
+        res = urllib2.urlopen(self.FOLDER_GET_CONTENT, data)
+        js = json.load(res)['response']
+        if (js['result'] == "Error"):
+            return js['message']
+        return js
 # Upload API
     def upload_UploadFile(self, filePath, folderKey = "myfiles", x_filename = ""):
         self.checkSessionToken()
@@ -432,8 +444,14 @@ class MediaFireLib(object):
         return js['doupload']['status']
 
 # Download API
-    def download_getLinks(self, quick_key, link_type):
-        pass
+    def download_getLinks(self, quick_key, link_type = 'direct_download'):
+        self.checkSessionToken()
+        data = urllib.urlencode({'session_token': self.sessionToken, 'response_format': self.responseFormat, 'quick_key': quick_key, 'link_type': link_type})
+        res = urllib2.urlopen(self.DOWNLOAD_GET_LINKS, data)
+        js = json.load(res)['response']
+        if (js['result'] == "Error"):
+            return js['message']
+        return js
 
 # System API
     def system_getVersion(self):
