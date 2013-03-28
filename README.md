@@ -14,7 +14,7 @@ This is a MediaFire.com API wrapper written in Python.
 
 ### ToDo
 * Comment all functions
-* Write all functions of main class
+* ~~Write all functions of main class~~
 * Add error handling
 * Add support of xml response format
 * Add more checks
