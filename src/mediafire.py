@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 # ToDo:
 #   - Comment all functions
-#   - Write all functions of class MediaFireLib
+#   - Write all functions of main class
 #   - Add error handling
 #   - Add support of xml response format
-#   - Add checks of function's parameters
+#   - Add more checks
+#   - Add Python 3.* version
 
 # MediaFire.com REST API link: http://developers.mediafire.com/index.php/REST_API
 
