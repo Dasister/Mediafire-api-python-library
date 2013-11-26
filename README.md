@@ -24,4 +24,4 @@ This is a MediaFire.com API wrapper written in Python.
 
 ### Links
 
-* [MediaFire.com REST API](http://developers.mediafire.com/index.php/REST_API)
+* [MediaFire.com REST API](https://www.mediafire.com/developers/)
