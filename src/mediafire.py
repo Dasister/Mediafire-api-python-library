@@ -115,7 +115,13 @@ class MediaFireLib(object):
 
     def user_renewSessionToken(self):
         data = urllib.urlencode({'session_token':self.sessionToken, 'response_format':self.responseFormat})
-        res = urllib2.urlopen(self.USER_RENEW_SESSION_TOKEN, data)
+        try:
+            res = urllib2.urlopen(self.USER_RENEW_SESSION_TOKEN, data)
+        except urllib2.HTTPError, err:
+            self.user_getSessionToken()
+            return self._sessionToken
+        except urllib2.URLError, err:
+            pass
         js = json.load(res)['response']
         if (js['result'] == "Error"):
             return js['message']
