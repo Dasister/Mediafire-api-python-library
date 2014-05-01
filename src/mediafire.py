@@ -16,6 +16,11 @@ import json, hashlib, os
 import mimetypes, mimetools, itertools
 import time
 
+import requests
+from requests_toolbelt import MultipartEncoder
+import uuid
+
+
 class MediaFireLib(object):
     userMail, userPassword, appID, apiKey = "", "", -1, ""
     sessionToken = ""
@@ -463,22 +468,35 @@ class MediaFireLib(object):
 # Upload API
     def upload_UploadFile(self, filePath, folderKey = "myfiles", x_filename = ""):
         self.checkSessionToken()
+
+        boundary_value = uuid.uuid4().hex
+        content_type = mimetypes.guess_type(filePath)
+
         fp = open(filePath, 'rb')
-        fSize = os.path.getsize(filePath)
-        mheaders = {'x-filename': os.path.basename(filePath), 'x-filesize': int(fSize), 'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.22 (KHTML, like Gecko) Chrome/25.0.1364.172 Safari/537.22'}
-        data = {'session_token': self.sessionToken, 'uploadkey': folderKey, 'response_format': self.responseFormat}
 
-        form = MultiPartForm()
-        form.add_file('fileUpload', os.path.basename(filePath), fp)
+        m = MultipartEncoder(
+            fields={'fileUpload': (os.path.basename(filePath), fp, 'application/octet-stream')}, boundary = boundary_value
+        )
 
-        request = urllib2.Request(self.FILE_UPLOAD + '?' + urllib.urlencode(data), None, mheaders)
-        body = str(form)
-        request.add_header('Content-Type', form.get_content_type())
-        request.add_header('Content-Length', len(body))
-        request.add_data(body)
-        res = urllib2.urlopen(request)
-        js = json.load(res)['response']
-        fp.close()
+        query_string_parameters = {
+            'session_token': self.sessionToken,
+            'uploadkey': folderKey,
+            'response_format': self.responseFormat
+        }
+
+        headers = {
+            'X-Filename': os.path.basename(filePath),
+            'X-Filesize': os.path.getsize(filePath),
+            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.22 (KHTML, like Gecko) Chrome/25.0.1364.172 Safari/537.22',
+            'Content-Type' : 'multipart/form-data; boundary=%s' % boundary_value,
+            'Content-Length' : len(m)
+        }
+
+        url = self.FILE_UPLOAD + '?' + urllib.urlencode(query_string_parameters)
+        r = requests.post(url, data=m, headers=headers )
+
+        js = json.loads(r.text)['response']
+
         if (js['result'] == "Error"):
             return js['message']
         return js['doupload']['key']
