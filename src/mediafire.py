@@ -124,7 +124,7 @@ class MediaFireLib(object):
             res = urllib2.urlopen(self.USER_RENEW_SESSION_TOKEN, data)
         except urllib2.HTTPError, err:
             self.user_getSessionToken()
-            return self._sessionToken
+            return self.sessionToken
         except urllib2.URLError, err:
             pass
         js = json.load(res)['response']
